@@ -3,6 +3,7 @@ package notifier
 import (
 	"context"
 	"log"
+	"os"
 
 	"firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
@@ -11,8 +12,11 @@ import (
 
 func initFCMClient() *messaging.Client {
 	ctx := context.Background()
-	conf := &firebase.Config{ProjectID: "your_project_id"}
-	opt := option.WithCredentialsFile("/app/serviceAccountKey.json")
+	projectID := os.Getenv("FIREBASE_PROJECT_ID")
+	credentialsPath := os.Getenv("FIREBASE_CREDENTIALS_PATH")
+
+	conf := &firebase.Config{ProjectID: projectID}
+	opt := option.WithCredentialsFile(credentialsPath)
 	app, err := firebase.NewApp(ctx, conf, opt)
 	if err != nil {
 		log.Fatalf("error initializing firebase app: %v", err)
@@ -24,12 +28,11 @@ func initFCMClient() *messaging.Client {
 	return fcmClient
 }
 
-// sendFCMNotification отправляет уведомление через Firebase Cloud Messaging.
 func (svc *NotificationService) sendFCMNotification(entry OutboxEntry) error {
 	message := &messaging.Message{
 		Token: entry.Recipient,
 		Notification: &messaging.Notification{
-			Title: "Notification",
+			Title: os.Getenv("FIREBASE_NOTIFICATION_TITLE"),
 			Body:  entry.Message,
 		},
 	}

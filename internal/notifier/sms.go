@@ -2,22 +2,28 @@ package notifier
 
 import (
 	"log"
+	"os"
 
 	"github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
 func initTwilioClient() *twilio.RestClient {
+	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
+	authToken := os.Getenv("TWILIO_AUTH_TOKEN")
+
 	return twilio.NewRestClientWithParams(twilio.ClientParams{
-		Username: "your_twilio_account_sid",
-		Password: "your_twilio_auth_token",
+		Username: accountSid,
+		Password: authToken,
 	})
 }
 
 func (svc *NotificationService) sendSMSNotification(entry OutboxEntry) error {
+	from := os.Getenv("TWILIO_NUMBER")
+
 	params := &openapi.CreateMessageParams{}
 	params.SetTo(entry.Recipient)
-	params.SetFrom("your_twilio_number")
+	params.SetFrom(from)
 	params.SetBody(entry.Message)
 
 	_, err := svc.twilioClient.Api.CreateMessage(params)

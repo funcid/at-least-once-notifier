@@ -1,13 +1,16 @@
 package notifier
 
-import "time"
+import (
+	"at-least-once-notifier/internal/model"
+	"time"
+)
 
 type OutboxEntry struct {
-	ID        uint   `gorm:"primaryKey"`
-	Service   string // FCM, APNs, SMS
-	Message   string // Сообщение
-	Recipient string // Получатель сообщения
-	Status    string // Например, pending, sent, failed
+	ID        uint `gorm:"primaryKey"`
+	Service   model.NotificationProvider
+	Message   string
+	Recipient string
+	Status    model.NotificationStatus
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

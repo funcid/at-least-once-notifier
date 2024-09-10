@@ -4,6 +4,7 @@ import (
 	_ "crypto/tls"
 	"fmt"
 	"log"
+	"os"
 
 	apns "github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/certificate"
@@ -11,7 +12,10 @@ import (
 )
 
 func initAPNsClient() *apns.Client {
-	cert, err := certificate.FromP12File("path/to/your/cert.p12", "your_password")
+	certPath := os.Getenv("APNS_CERT_PATH")
+	certPassword := os.Getenv("APNS_CERT_PASSWORD")
+
+	cert, err := certificate.FromP12File(certPath, certPassword)
 	if err != nil {
 		log.Fatalf("error loading APNs certificate: %v", err)
 	}
@@ -21,10 +25,15 @@ func initAPNsClient() *apns.Client {
 }
 
 func (svc *NotificationService) sendAPNsNotification(entry OutboxEntry) error {
+	topic := os.Getenv("APNS_BUNDLE_ID")
+
 	notification := &apns.Notification{
 		DeviceToken: entry.Recipient,
-		Topic:       "your.bundle.id",
-		Payload:     payload.NewPayload().AlertTitle("Notification").AlertBody(entry.Message),
+		Topic:       topic,
+		Payload: payload.
+			NewPayload().
+			AlertTitle(os.Getenv("APNS_NOTIFICATION_TITLE")).
+			AlertBody(entry.Message),
 	}
 
 	res, err := svc.apnsClient.Push(notification)

@@ -1,6 +1,7 @@
 package notifier
 
 import (
+	"at-least-once-notifier/internal/model"
 	"fmt"
 	"log"
 
@@ -50,7 +51,7 @@ func (svc *NotificationService) ProcessOutboxNotifications() error {
 func (svc *NotificationService) getOutboxEntries() ([]OutboxEntry, error) {
 	var outboxEntries []OutboxEntry
 	// Извлечение записей со статусом "pending"
-	if err := svc.db.Where("status = ?", "pending").Find(&outboxEntries).Error; err != nil {
+	if err := svc.db.Where("status = ?", model.StatusPending).Find(&outboxEntries).Error; err != nil {
 		return nil, err
 	}
 	return outboxEntries, nil
@@ -61,11 +62,11 @@ func (svc *NotificationService) sendNotification(entry OutboxEntry) error {
 	var err error
 
 	switch entry.Service {
-	case "FCM":
+	case model.ServiceFCM:
 		err = svc.sendFCMNotification(entry)
-	case "APNs":
+	case model.ServiceAPNs:
 		err = svc.sendAPNsNotification(entry)
-	case "SMS":
+	case model.ServiceSMS:
 		err = svc.sendSMSNotification(entry)
 	default:
 		err = fmt.Errorf("unknown notification service: %s", entry.Service)
@@ -75,6 +76,6 @@ func (svc *NotificationService) sendNotification(entry OutboxEntry) error {
 }
 
 func (svc *NotificationService) markAsSent(entry OutboxEntry) error {
-	entry.Status = "sent"
+	entry.Status = model.StatusSent
 	return svc.db.Save(&entry).Error
 }
