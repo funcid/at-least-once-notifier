@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	firebase.google.com/go/v4 v4.14.1
+	github.com/gorilla/mux v1.8.1
 	github.com/joho/godotenv v1.5.1
 	github.com/sideshow/apns2 v0.24.0
 	github.com/twilio/twilio-go v1.23.0

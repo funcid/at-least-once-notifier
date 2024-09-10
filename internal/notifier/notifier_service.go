@@ -50,7 +50,6 @@ func (svc *NotificationService) ProcessOutboxNotifications() error {
 
 func (svc *NotificationService) getOutboxEntries() ([]OutboxEntry, error) {
 	var outboxEntries []OutboxEntry
-	// Извлечение записей со статусом "pending"
 	if err := svc.db.Where("status = ?", model.StatusPending).Find(&outboxEntries).Error; err != nil {
 		return nil, err
 	}
@@ -78,4 +77,9 @@ func (svc *NotificationService) sendNotification(entry OutboxEntry) error {
 func (svc *NotificationService) markAsSent(entry OutboxEntry) error {
 	entry.Status = model.StatusSent
 	return svc.db.Save(&entry).Error
+}
+
+func (svc *NotificationService) AddToOutbox(entry OutboxEntry) error {
+	entry.Status = model.StatusPending
+	return svc.db.Create(&entry).Error
 }

@@ -2,16 +2,18 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"time"
 
 	"at-least-once-notifier/internal/notifier"
+	"at-least-once-notifier/internal/server"
 	"github.com/joho/godotenv"
 )
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Fatalf("Error loading .env.example file: %v", err)
 	}
 
 	log.Println("Starting notifier service...")
@@ -28,6 +30,12 @@ func main() {
 	// Run a ticker for periodically sending notifications from the outbox
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
+
+	// Start REST server
+	srv := server.NewServer(notifyService)
+	go func() {
+		log.Fatal(http.ListenAndServe(":8080", srv.Router()))
+	}()
 
 	for {
 		select {
